@@ -1,0 +1,4 @@
+The Legal Tools plugin (the "Plugin"), and its author Angus McLeod (the "Author"), is not a lawyer or a substitute for a lawyer or legal advice.
+Communications between you and the Author are not protected by lawyer-client privilege or as work product.
+The Plugin, and its Author, cannot provide any kind of advice, explanation, opinion, recommendation or surety
+about possible legal rights, remedies, defences, options, selection of forms, or strategies.
