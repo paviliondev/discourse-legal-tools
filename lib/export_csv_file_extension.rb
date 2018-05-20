@@ -157,7 +157,7 @@ module ExportCsvFileExtension
 
     if user_external_accounts_fields.any?
       separator('External Accounts').each { |l| yield l }
-      yield user_external_accounts_fields
+      yield user_external_accounts_labels.values
       yield user_external_accounts
     end
 
@@ -234,11 +234,49 @@ module ExportCsvFileExtension
     end
   end
 
+  def user_external_accounts_labels
+    labels = {}
+
+    @user_external_accounts_fields.each do |f|
+      prefix = nil
+
+      case f
+      when f.include?('open_ids')
+        prefix = 'open_id'
+      when f.include?('single_sign_on')
+        prefix = 'sso'
+      else
+        prefix = f.split('_')[0]
+      end
+
+      labels[f] = prefix + '_' + f.split('.')[1]
+    end
+
+    labels
+  end
+
+  def user_external_accounts_select
+    @user_external_accounts_fields.map do |f|
+      "#{f} AS #{user_external_accounts_labels[f]}"
+    end
+  end
+
   def user_external_accounts
-    User.where(id: @current_user.id)
-      .joins(:google_user_info, :facebook_user_info, :twitter_user_info, :github_user_info, :instagram_user_info, :oauth2_user_info, :user_open_ids, :single_sign_on_record)
-      .select(user_external_accounts_fields)
-      .first.attributes.except("id").values
+    attributes = User.where(id: @current_user.id)
+      .joins("
+        LEFT JOIN google_user_infos ON google_user_infos.user_id = users.id
+        LEFT JOIN facebook_user_infos ON facebook_user_infos.user_id = users.id
+        LEFT JOIN twitter_user_infos ON twitter_user_infos.user_id = users.id
+        LEFT JOIN github_user_infos ON github_user_infos.user_id = users.id
+        LEFT JOIN instagram_user_infos ON instagram_user_infos.user_id = users.id
+        LEFT JOIN oauth2_user_infos ON oauth2_user_infos.user_id = users.id
+        LEFT JOIN user_open_ids ON user_open_ids.user_id = users.id
+        LEFT JOIN single_sign_on_records ON single_sign_on_records.user_id = users.id
+      ")
+      .select(user_external_accounts_select)
+      .first.attributes
+
+    user_external_accounts_labels.values.map { |l| attributes[l] }
   end
 
   def user_stats
