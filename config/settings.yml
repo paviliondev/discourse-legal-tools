@@ -1,3 +1,4 @@
 plugins:
   legal_extended_user_download:
     default: false
+    client: true
