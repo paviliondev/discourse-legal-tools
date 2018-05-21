@@ -1,6 +1,6 @@
 # name: discourse-legal-tools
 # about: Tools to help with legal compliance when using Discourse
-# version: 0.1
+# version: 0.2
 # author: Angus McLeod
 
 after_initialize do
