@@ -158,6 +158,18 @@ module ExportCsvFileExtension
     'ip_address'
   ]
 
+  LIKES = [
+    'target_topic_id',
+    'target_post_id',
+    'created_at'
+  ]
+
+  BOOKMARKS = [
+    'target_topic_id',
+    'target_post_id',
+    'created_at'
+  ]
+
   def user_archive_export
     return enum_for(:user_archive_export) unless block_given?
 
@@ -205,6 +217,14 @@ module ExportCsvFileExtension
     separator('Profile Views').each { |l| yield l }
     yield PROFILE_VIEWS
     user_profile_views.each { |l| yield l }
+
+    separator('Likes Given').each { |l| yield l }
+    yield LIKES
+    user_likes.each { |l| yield l }
+
+    separator('Bookmarks').each { |l| yield l }
+    yield BOOKMARKS
+    user_bookmarks.each { |l| yield l }
   end
 
   def get_header
@@ -390,5 +410,19 @@ module ExportCsvFileExtension
     PROFILE_VIEWS.map do |f|
       f === 'username' ? 'users.username' : f
     end
+  end
+
+  def user_likes
+    UserAction.where(user_id: @current_user.id, action_type: UserAction::LIKE)
+      .map do |like|
+	LIKES.map { |k| like.attributes[k] }
+      end
+  end
+
+  def user_bookmarks
+    UserAction.where(user_id: @current_user.id, action_type: UserAction::BOOKMARK)
+      .map do |like|
+	BOOKMARKS.map { |k| like.attributes[k] }
+      end
   end
 end
