@@ -158,6 +158,31 @@ module ExportCsvFileExtension
     'ip_address'
   ]
 
+  ACTIONS = [
+    'action_type',
+    'target_topic_id',
+    'target_post_id',
+    'acting_user_id',
+    'created_at'
+  ]
+
+  ACTION_LABELS = {
+    1 => 'Like',
+    2 => 'Was Liked',
+    3 => 'Bookmark',
+    4 => 'New Topic',
+    5 => 'Reply',
+    6 => 'Response',
+    7 => 'Mention',
+    9 => 'Quote',
+    11 => 'Edit',
+    12 => 'New Private Message',
+    13 => 'Got Private Message',
+    14 => 'Pending',
+    15 => 'Solved',
+    16 => 'Assigned'
+  }
+
   def user_archive_export
     return enum_for(:user_archive_export) unless block_given?
 
@@ -186,10 +211,6 @@ module ExportCsvFileExtension
     yield AUTH_TOKEN_LOGS
     yield user_auth_token_logs
 
-    separator('Action History').each { |l| yield l }
-    yield HISTORY
-    user_history.each { |l| yield l }
-
     separator('Searches').each { |l| yield l }
     yield SEARCHES
     user_searches.each { |l| yield l }
@@ -205,6 +226,14 @@ module ExportCsvFileExtension
     separator('Profile Views').each { |l| yield l }
     yield PROFILE_VIEWS
     user_profile_views.each { |l| yield l }
+
+    separator('Actions').each { |l| yield l }
+    yield ACTIONS
+    user_actions.each { |l| yield l }
+
+    separator('History').each { |l| yield l }
+    yield HISTORY
+    user_history.each { |l| yield l }
   end
 
   def get_header
@@ -318,6 +347,20 @@ module ExportCsvFileExtension
       .first
 
     logs ? logs.attributes.except("id").values : []
+  end
+
+  def user_actions
+    UserAction.where(user_id: @current_user.id)
+      .select(ACTIONS)
+      .map do |action|
+        ACTIONS.map do |k|
+          if k === 'action_type'
+            ACTION_LABELS[action.attributes[k].to_i]
+          else
+            action.attributes[k]
+          end
+        end
+      end
   end
 
   def user_history
