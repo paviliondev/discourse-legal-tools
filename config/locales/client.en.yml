@@ -1,0 +1,5 @@
+en:
+  js:
+    user:
+      download_archive:
+        confirm: "Are you sure you want to download all of your information?"
