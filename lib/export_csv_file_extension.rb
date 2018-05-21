@@ -104,6 +104,19 @@ module ExportCsvFileExtension
     'topic_count'
   ]
 
+  AUTH_TOKEN = [
+    "user_agent",
+    "client_ip",
+    "seen_at"
+  ]
+
+  AUTH_TOKEN_LOGS = [
+    "action",
+    "client_ip",
+    "user_agent",
+    "created_at"
+  ]
+
   HISTORY = [
     'action',
     'target_user_id',
@@ -165,7 +178,15 @@ module ExportCsvFileExtension
     yield STATS
     yield user_stats
 
-    separator('History').each { |l| yield l }
+    separator('Login').each { |l| yield l }
+    yield AUTH_TOKEN
+    yield user_auth_tokens
+
+    separator('Login History').each { |l| yield l }
+    yield AUTH_TOKEN_LOGS
+    yield user_auth_token_logs
+
+    separator('Action History').each { |l| yield l }
     yield HISTORY
     user_history.each { |l| yield l }
 
@@ -285,10 +306,26 @@ module ExportCsvFileExtension
       .first.attributes.except("user_id").values
   end
 
+  def user_auth_tokens
+    UserAuthToken.where(user_id: @current_user.id)
+      .select(AUTH_TOKEN)
+      .first.attributes.except("id").values
+  end
+
+  def user_auth_token_logs
+    logs = UserAuthTokenLog.where(user_id: @current_user.id)
+      .select(AUTH_TOKEN_LOGS)
+      .first
+
+    logs ? logs.attributes.except("id").values : []
+  end
+
   def user_history
-    UserHistory.where(acting_user_id: @current_user.id)
+    entries = UserHistory.where(acting_user_id: @current_user.id)
       .select(HISTORY)
-      .map do |entry|
+
+    if entries.any?
+      entries.map do |entry|
         entry.attributes.except("id").map do |k, v|
           if k === "action"
             UserHistory.actions.key(v)
@@ -297,6 +334,9 @@ module ExportCsvFileExtension
           end
         end
       end
+    else
+      []
+    end
   end
 
   def user_searches
