@@ -1,0 +1,37 @@
+{
+  "id": "privacy_update",
+  "name": "Privacy Update",
+  "save_submissions": true,
+  "required": true,
+  "steps": [
+    {
+      "id": "update",
+      "title": "We've Updated our Privacy Policy",
+      "fields": [
+        {
+          "id": "notice",
+          "description": "We take privacy seriously and treat your data with respect.\n\nAs the EU's General Data Protection Regulation is coming into force on May 25th, we've taken the opportunity to review our privacy policy and made a number of changes.\n\n<a href='http://yoursite.com/privacy' target='_blank'>\nPlease take a moment to review the new policy.\n</a>\n\nIf you have any questions about the policy, or anything else about how we handle your data, don't hesitate to reach out to our Data Protection Officer, [name](http://mailto:email).",
+          "type": "text-only"
+        },
+        {
+          "id": "consent",
+          "type": "checkbox",
+          "required": true,
+          "description": "I consent to the use of my information under the privacy policy."
+        }
+      ],
+      "actions": [
+        {
+          "id": "save_consent",
+          "type": "update_profile",
+          "profile_updates": [
+            {
+              "key": "consent",
+              "user_field": "user_field_1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
