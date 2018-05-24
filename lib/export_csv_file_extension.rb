@@ -435,3 +435,10 @@ module ExportCsvFileExtension
     end
   end
 end
+
+if SiteSetting.legal_extended_user_download
+  require_dependency 'jobs/regular/export_csv_file'
+  class Jobs::ExportCsvFile
+    prepend ExportCsvFileExtension
+  end
+end

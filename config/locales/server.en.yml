@@ -1,3 +1,22 @@
 en:
+  user_notifications:
+    digest_opt_in:
+      title: "Stay in the Loop"
+      description: >
+        Thanks for participating in %{site_name}!
+        We occasionally send you summaries of the activity on %{site_name}. If you would like
+        to keep recieving those summaries please click the button below.
+      button: "Yes, keep sending me summaries of the acitivity on %{site_name}."
+      footer: >
+        If you would like to change the frequency of the summaries, or any of your other email settings..
+      subject_template: "[%{email_prefix}] Stay in the Loop'"
+      text_body_template: |
+        %{title}
+
+        %{description}
+
+        %{subscribe_url}
+
   site_settings:
-    legal_extended_user_download: "Include all user information in the download feature in the user profile. Refresh after changing this."
+    legal_extended_user_download: >
+      Include all user information in the download feature in the user profile. Refresh after changing this.

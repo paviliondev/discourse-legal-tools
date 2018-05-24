@@ -3,3 +3,15 @@ en:
     user:
       download_archive:
         confirm_all: "Are you sure you want to download all of your information?"
+
+  admin_js:
+    admin:
+      legal:
+        title: "Legal"
+        digest:
+          title: "Digest"
+          opt_in:
+            label: "Digest Opt-In"
+            all: "Send to all digest subscribers"
+            users: "Send to specific users"
+            btn: "Send"

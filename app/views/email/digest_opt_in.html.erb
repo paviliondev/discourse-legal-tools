@@ -1,0 +1,7 @@
+<div id='main'>
+  <h4 class='header'><%= title %></h4>
+
+  <div class='body'><%= message %></div>
+
+  <%= button_to t('user_notifications.digest_opt_in.button'), subscribe_url, class: 'btn btn-primary', remote: true %>
+</div>

@@ -1,0 +1,40 @@
+<div class="legal-digest">
+  <div class="container opt-in">
+    <h2>{{i18n 'admin.legal.digest.opt_in.label'}}</h2>
+    <div class="controls">
+      <div class="toggle">
+        {{input type='checkbox' checked=optInSpecificUsers}}
+        <span>{{i18n 'admin.legal.digest.opt_in.users'}}</span>
+      </div>
+      {{user-selector usernames=optInUsernames}}
+    </div>
+    <div class="controls">
+      <div class="toggle">
+        {{input type='checkbox' checked=optInAllSubscribers}}
+        <span>{{i18n 'admin.legal.digest.opt_in.all'}}</span>
+      </div>
+    </div>
+    <div class="action">
+      {{d-button action='sendDigestOptIn'
+                 class='btn-primary'
+                 label='admin.legal.digest.opt_in.btn'
+                 disabled=sendOptInDisabled}}
+      {{conditional-loading-spinner condition=sendingOptIn size='small'}}
+      {{#if showOptInIcon}}
+        {{d-icon optInIcon}}
+      {{/if}}
+    </div>
+  </div>
+
+  {{!--
+  <div class="unsubscribe">
+    {{user-selector usernames=unsubscribeUsernames}}
+    {{d-button action='sendDigestUnsubscribe'
+               label=''
+               class='btn-primary'}}
+    {{#if showUnsubscribeIcon}}
+      {{d-icon unsubscribeIcon}}
+    {{/if}}
+  </div>
+  --}}
+</div>
