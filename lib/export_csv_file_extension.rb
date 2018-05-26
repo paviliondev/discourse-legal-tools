@@ -432,9 +432,11 @@ module ExtendedDownloadExportExtension
   end
 
   def user_auth_tokens
-    UserAuthToken.where(user_id: archive_user.id)
+    tokens = UserAuthToken.where(user_id: archive_user.id)
       .select(AUTH_TOKEN)
-      .first.attributes.except("id").values
+      .first
+
+    tokens ? tokens.attributes.except("id").values : []
   end
 
   def user_auth_token_logs
