@@ -3,3 +3,8 @@ plugins:
     default: false
     client: true
     shadowed_by_global: true
+  legal_extended_user_download_admin:
+    enum: LegalExtendedUserDownloadAdminSiteSetting
+    default: ''
+    client: true
+    shadowed_by_global: true

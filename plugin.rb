@@ -14,13 +14,24 @@ DiscourseEvent.on(:custom_wizard_ready) do
   end
 end
 
+load File.expand_path('../models/legal_extended_user_download_admin_site_setting.rb', __FILE__)
+
 after_initialize do
   load File.expand_path('../lib/export_csv_file_extension.rb', __FILE__)
 
-  if SiteSetting.legal_extended_user_download
-    require_dependency 'jobs/regular/export_csv_file'
-    class Jobs::ExportCsvFile
-      prepend ExportCsvFileExtension
-    end
+  require_dependency 'jobs/regular/export_csv_file'
+  class Jobs::ExportCsvFile
+    prepend ExtendedDownloadExportExtension
+  end
+
+  require_dependency 'guardian'
+  class ::Guardian
+    prepend ExtendedDownloadGuardianExtension
+  end
+
+  require_dependency 'export_csv_controller'
+  class ::ExportCsvController
+    before_action :ensure_staff, if: -> { admin_user_archive }
+    prepend ExtendedDownloadControllerExtension
   end
 end

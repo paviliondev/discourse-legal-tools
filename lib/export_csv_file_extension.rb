@@ -1,5 +1,61 @@
 require_dependency 'topic_view_item'
-module ExportCsvFileExtension
+
+module ExtendedDownloadControllerExtension
+  private def export_params
+    if admin_user_archive
+      @_export_params ||= begin
+        params.require(:entity)
+        params.permit(:entity, args: [:user_id]).to_h
+      end
+    else
+      super
+    end
+  end
+
+  private def admin_user_archive
+    params[:entity] === 'admin_user_archive'
+  end
+end
+
+
+module ExtendedDownloadGuardianExtension
+  def can_export_entity?(entity)
+    if entity == "user_archive" || entity == 'admin_user_archive'
+      return false unless @user
+
+      if entity == 'user_archive'
+        if SiteSetting.legal_extended_user_download
+          return true if admin_extended_user_download
+          has_not_created_export_today
+        else
+          return true if is_staff?
+          has_not_created_export_today
+        end
+      elsif entity == 'admin_user_archive'
+        admin_extended_user_download
+      end
+    else
+      super
+    end
+  end
+
+  def has_not_created_export_today
+    UserExport.where(user_id: @user.id, created_at: (Time.zone.now.beginning_of_day..Time.zone.now.end_of_day)).count == 0
+  end
+
+  def admin_extended_user_download
+    case SiteSetting.legal_extended_user_download_admin
+    when 'disabled'
+      false
+    when 'admins_only'
+      is_admin?
+    when 'admins_and_staff'
+      is_staff?
+    end
+  end
+end
+
+module ExtendedDownloadExportExtension
   ACCOUNT = [
     'id',
     'username',
@@ -183,74 +239,114 @@ module ExportCsvFileExtension
     16 => 'Assigned'
   }
 
-  def user_archive_export
+  def user_archive_export(&block)
     return enum_for(:user_archive_export) unless block_given?
 
-    yield Jobs::ExportCsvFile::HEADER_ATTRS_FOR[@entity]
-    user_posts.each { |posts| yield get_user_archive_fields(posts) }
-
-    separator('Account').each { |l| yield l }
-    yield ACCOUNT + PROFILE + EMAIL
-    yield user_account
-
-    if user_external_accounts_fields.any?
-      separator('External Accounts').each { |l| yield l }
-      yield user_external_accounts_labels.values
-      yield user_external_accounts
-    end
-
-    separator('Statistics').each { |l| yield l }
-    yield STATS
-    yield user_stats
-
-    separator('Login').each { |l| yield l }
-    yield AUTH_TOKEN
-    yield user_auth_tokens
-
-    separator('Login History').each { |l| yield l }
-    yield AUTH_TOKEN_LOGS
-    yield user_auth_token_logs
-
-    separator('Searches').each { |l| yield l }
-    yield SEARCHES
-    user_searches.each { |l| yield l }
-
-    separator('Topic Views').each { |l| yield l }
-    yield TOPIC_VIEWS
-    user_topic_views.each { |l| yield l }
-
-    separator('Topic Link Clicks').each { |l| yield l }
-    yield TOPIC_LINK_CLICKS
-    user_topic_link_clicks.each { |l| yield l }
-
-    separator('Profile Views').each { |l| yield l }
-    yield PROFILE_VIEWS
-    user_profile_views.each { |l| yield l }
-
-    separator('Actions').each { |l| yield l }
-    yield ACTIONS
-    user_actions.each { |l| yield l }
-
-    separator('History').each { |l| yield l }
-    yield HISTORY
-    user_history.each { |l| yield l }
-  end
-
-  def get_header
-    if @entity === 'user_archive'
-      ['Posts']
+    if SiteSetting.legal_extended_user_download
+      user_archive_export_extended(block)
     else
       super
     end
+  end
+
+  def admin_user_archive_export(&block)
+    return enum_for(:admin_user_archive_export) unless block_given?
+
+    if SiteSetting.legal_extended_user_download_admin
+      user_archive_export_extended(block)
+    else
+      raise Discourse::InvalidAccess.new(legal_extended_user_download_admin)
+    end
+  end
+
+  def archive_user
+    @archive_user ||= begin
+      if @entity === 'user_archive'
+        @current_user
+      else
+        User.find_by(id: @extra[:user_id])
+      end
+    end
+  end
+
+  def get_header
+    if (@entity === 'user_archive' && SiteSetting.legal_extended_user_download) ||
+       (@entity === 'admin_user_archive' && SiteSetting.legal_extended_user_download_admin)
+      extended_header
+    else
+      super
+    end
+  end
+
+  def extended_header
+    [ I18n.t('csv_export.extended.title', username: archive_user.username, site_name: SiteSetting.title) ]
+  end
+
+  def extended_note
+    [ I18n.t('csv_export.extended.note', username: archive_user.username, site_contact: SiteSetting.contact_email) ]
   end
 
   def separator(name)
     [["\n"], ["\n"], [name]]
   end
 
+  def user_archive_export_extended(block)
+    block.call extended_note
+
+    separator('Posts').each { |l| block.call l }
+    block.call Jobs::ExportCsvFile::HEADER_ATTRS_FOR['user_archive']
+    user_posts.each { |posts| block.call get_user_archive_fields(posts) }
+
+    separator('Account').each { |l| block.call l }
+    block.call ACCOUNT + PROFILE + EMAIL
+    block.call user_account
+
+    if user_external_accounts_fields.any?
+      separator('External Accounts').each { |l| block.call l }
+      block.call user_external_accounts_labels.values
+      block.call user_external_accounts
+    end
+
+    separator('Statistics').each { |l| block.call l }
+    block.call STATS
+    block.call user_stats
+
+    separator('Login').each { |l| block.call l }
+    block.call AUTH_TOKEN
+    block.call user_auth_tokens
+
+    separator('Login History').each { |l| block.call l }
+    block.call AUTH_TOKEN_LOGS
+    block.call user_auth_token_logs
+
+    separator('Searches').each { |l| block.call l }
+    block.call SEARCHES
+    user_searches.each { |l| block.call l }
+
+    separator('Topic Views').each { |l| block.call l }
+    block.call TOPIC_VIEWS
+    user_topic_views.each { |l| block.call l }
+
+    separator('Topic Link Clicks').each { |l| block.call l }
+    block.call TOPIC_LINK_CLICKS
+    user_topic_link_clicks.each { |l| block.call l }
+
+    separator('Profile Views').each { |l| block.call l }
+    block.call PROFILE_VIEWS
+    user_profile_views.each { |l| block.call l }
+
+    separator('Actions').each { |l| block.call l }
+    block.call ACTIONS
+    user_actions.each { |l| block.call l }
+
+    separator('History').each { |l| block.call l }
+    block.call HISTORY
+    user_history.each { |l| block.call l }
+  end
+
   def user_posts
     Post.includes(topic: :category)
-      .where(user_id: @current_user.id)
+      .where(user_id: archive_user.id)
       .select(:topic_id, :post_number, :raw, :like_count, :reply_count, :created_at)
       .order(:created_at)
       .with_deleted
@@ -263,7 +359,7 @@ module ExportCsvFileExtension
   end
 
   def user_account
-    User.where(id: @current_user.id)
+    User.where(id: archive_user.id)
       .joins(:user_profile, :user_emails)
       .select(user_account_fields)
       .first.attributes.values
@@ -272,14 +368,14 @@ module ExportCsvFileExtension
   def user_external_accounts_fields
     @user_external_accounts_fields ||= begin
       fields = []
-      fields.concat GOOGLE.map { |f| "google_user_infos.#{f}" } if GoogleUserInfo.exists?(user_id: @current_user.id)
-      fields.concat FACEBOOK.map { |f| "facebook_user_infos.#{f}" } if FacebookUserInfo.exists?(user_id: @current_user.id)
-      fields.concat TWITTER.map { |f| "twitter_user_infos.#{f}" } if TwitterUserInfo.exists?(user_id: @current_user.id)
-      fields.concat GITHUB.map { |f| "github_user_infos.#{f}" } if GithubUserInfo.exists?(user_id: @current_user.id)
-      fields.concat INSTAGRAM.map { |f| "instagram_user_infos.#{f}" } if InstagramUserInfo.exists?(user_id: @current_user.id)
-      fields.concat OAUTH.map { |f| "oauth2_user_infos.#{f}" } if Oauth2UserInfo.exists?(user_id: @current_user.id)
-      fields.concat OPEN_ID.map { |f| "user_open_ids.#{f}" } if UserOpenId.exists?(user_id: @current_user.id)
-      fields.concat SSO.map { |f| "single_sign_on_records.#{f}" } if SingleSignOnRecord.exists?(user_id: @current_user.id)
+      fields.concat GOOGLE.map { |f| "google_user_infos.#{f}" } if GoogleUserInfo.exists?(user_id: archive_user.id)
+      fields.concat FACEBOOK.map { |f| "facebook_user_infos.#{f}" } if FacebookUserInfo.exists?(user_id: archive_user.id)
+      fields.concat TWITTER.map { |f| "twitter_user_infos.#{f}" } if TwitterUserInfo.exists?(user_id: archive_user.id)
+      fields.concat GITHUB.map { |f| "github_user_infos.#{f}" } if GithubUserInfo.exists?(user_id: archive_user.id)
+      fields.concat INSTAGRAM.map { |f| "instagram_user_infos.#{f}" } if InstagramUserInfo.exists?(user_id: archive_user.id)
+      fields.concat OAUTH.map { |f| "oauth2_user_infos.#{f}" } if Oauth2UserInfo.exists?(user_id: archive_user.id)
+      fields.concat OPEN_ID.map { |f| "user_open_ids.#{f}" } if UserOpenId.exists?(user_id: archive_user.id)
+      fields.concat SSO.map { |f| "single_sign_on_records.#{f}" } if SingleSignOnRecord.exists?(user_id: archive_user.id)
       fields
     end
   end
@@ -312,7 +408,7 @@ module ExportCsvFileExtension
   end
 
   def user_external_accounts
-    attributes = User.where(id: @current_user.id)
+    attributes = User.where(id: archive_user.id)
       .joins("
         LEFT JOIN google_user_infos ON google_user_infos.user_id = users.id
         LEFT JOIN facebook_user_infos ON facebook_user_infos.user_id = users.id
@@ -330,19 +426,21 @@ module ExportCsvFileExtension
   end
 
   def user_stats
-    UserStat.where(user_id: @current_user.id)
+    UserStat.where(user_id: archive_user.id)
       .select(STATS)
       .first.attributes.except("user_id").values
   end
 
   def user_auth_tokens
-    UserAuthToken.where(user_id: @current_user.id)
+    tokens = UserAuthToken.where(user_id: archive_user.id)
       .select(AUTH_TOKEN)
-      .first.attributes.except("id").values
+      .first
+
+    tokens ? tokens.attributes.except("id").values : []
   end
 
   def user_auth_token_logs
-    logs = UserAuthTokenLog.where(user_id: @current_user.id)
+    logs = UserAuthTokenLog.where(user_id: archive_user.id)
       .select(AUTH_TOKEN_LOGS)
       .first
 
@@ -350,7 +448,7 @@ module ExportCsvFileExtension
   end
 
   def user_actions
-    UserAction.where(user_id: @current_user.id)
+    UserAction.where(user_id: archive_user.id)
       .select(ACTIONS)
       .map do |action|
         ACTIONS.map do |k|
@@ -364,7 +462,7 @@ module ExportCsvFileExtension
   end
 
   def user_history
-    entries = UserHistory.where(acting_user_id: @current_user.id)
+    entries = UserHistory.where(acting_user_id: archive_user.id)
       .select(HISTORY)
 
     if entries.any?
@@ -383,7 +481,7 @@ module ExportCsvFileExtension
   end
 
   def user_searches
-    SearchLog.where(user_id: @current_user.id)
+    SearchLog.where(user_id: archive_user.id)
       .select(SEARCHES)
       .map do |search|
         SEARCHES.map { |k| search.attributes[k] }
@@ -391,7 +489,7 @@ module ExportCsvFileExtension
   end
 
   def user_topic_views
-    TopicViewItem.where(user_id: @current_user.id)
+    TopicViewItem.where(user_id: archive_user.id)
       .joins("INNER JOIN topics ON topics.id = topic_views.topic_id")
       .select(user_topic_views_fields)
       .map do |view|
@@ -406,7 +504,7 @@ module ExportCsvFileExtension
   end
 
   def user_topic_link_clicks
-    TopicLinkClick.where(user_id: @current_user.id)
+    TopicLinkClick.where(user_id: archive_user.id)
       .joins("INNER JOIN topic_links ON topic_links.id = topic_link_clicks.topic_link_id")
       .select(user_topic_link_clicks_fields)
       .map do |click|
@@ -421,7 +519,7 @@ module ExportCsvFileExtension
   end
 
   def user_profile_views
-    UserProfileView.where(user_id: @current_user.id)
+    UserProfileView.where(user_id: archive_user.id)
       .joins("INNER JOIN users ON users.id = user_profile_views.user_profile_id")
       .select(user_profile_views_fields)
       .map do |view|
