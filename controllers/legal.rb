@@ -4,23 +4,17 @@ class DiscourseLegal::AdminController < ::ApplicationController
   def index
   end
 
-  def digest_opt_in
-    Jobs.enqueue(:digest_opt_in,
-      target_users: digest_params[:target_users]
-    )
-
+  def send_consent
+    Jobs.enqueue(:send_consent, digest_params.to_h)
     render json: success_json
   end
 
-  def digest_unsubscribe
-    Jobs.enqueue(:digest_unsubscribe,
-      target_users: digest_params[:target_users]
-    )
-
+  def update_attributes
+    Jobs.enqueue(:update_attributes, digest_params.to_h)
     render json: success_json
   end
 
   def digest_params
-    params.permit(:target_users)
+    params.permit(:target_users, target_attributes: [:email_digests])
   end
 end

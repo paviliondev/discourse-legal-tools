@@ -1,5 +1,5 @@
 export default Ember.Route.extend({
   redirect() {
-    this.replaceWith('adminLegal.digest');
+    this.replaceWith('adminLegal.consent');
   }
 })

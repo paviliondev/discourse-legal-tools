@@ -8,10 +8,10 @@ en:
     admin:
       legal:
         title: "Legal"
-        digest:
-          title: "Digest"
-          opt_in:
-            label: "Digest Opt-In"
-            all: "Send to all digest subscribers"
-            users: "Send to specific users"
-            btn: "Send"
+        consent:
+          title: "Consent"
+          recipients:
+            label: "Recipients"
+            attributes: "Select users by attribute"
+            users: "Select users"
+          send: "Send"

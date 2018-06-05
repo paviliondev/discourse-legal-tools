@@ -1,0 +1,49 @@
+<div class="legal-digest">
+  <div class="container send-consent">
+    <h3>{{i18n 'admin.legal.consent.recipients.label'}}</h3>
+    <div class="controls">
+      <div class="toggle">
+        {{input type='checkbox' checked=recipientUsers}}
+        <span>{{i18n 'admin.legal.consent.recipients.users'}}</span>
+      </div>
+      {{user-selector usernames=recipientUsernames}}
+    </div>
+    <div class="controls">
+      <div class="toggle">
+        {{input type='checkbox' checked=recipientAttributes}}
+        <span>{{i18n 'admin.legal.recipients.attributes'}}</span>
+      </div>
+    </div>
+    <div class="action">
+      {{d-button action='sendConsent'
+                 class='btn-primary'
+                 label='admin.legal.consent.send'
+                 disabled=sendConsentDisabled}}
+      {{conditional-loading-spinner condition=sendingConsent size='small'}}
+      {{#if showConsentIcon}}
+        {{d-icon consentIcon}}
+      {{/if}}
+    </div>
+  </div>
+
+  <div class='email-template'>
+    <label>{{i18n "admin.customize.email_templates.subject"}}</label>
+      {{input value=buffered.subject}}
+    <br>
+
+    <label>{{i18n "admin.customize.email_templates.body"}}</label>
+    {{d-editor value=buffered.body}}
+  </div>
+
+  {{!--
+  <div class="unsubscribe">
+    {{user-selector usernames=unsubscribeUsernames}}
+    {{d-button action='sendDigestUnsubscribe'
+               label=''
+               class='btn-primary'}}
+    {{#if showUnsubscribeIcon}}
+      {{d-icon unsubscribeIcon}}
+    {{/if}}
+  </div>
+  --}}
+</div>

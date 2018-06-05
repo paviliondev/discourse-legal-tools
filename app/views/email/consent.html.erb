@@ -1,0 +1,10 @@
+<div id='main'>
+  <h4 class='header'><%= title %></h4>
+  <%- if before %>
+    <div class='body'><%= before %></div>
+  <%- end %>
+  <%= button_to button, consent_url, class: 'btn btn-primary', remote: true %>
+  <%- if after %>
+    <div class='body'><%= after %></div>
+  <%- end %>
+</div>
