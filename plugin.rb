@@ -23,4 +23,26 @@ after_initialize do
     before_action :ensure_staff, if: -> { admin_user_archive }
     prepend ExtendedDownloadControllerExtension
   end
+
+  module LegalUploadsControllerExtension
+    def show
+      return render_404 if !RailsMultisite::ConnectionManagement.has_db?(params[:site])
+      RailsMultisite::ConnectionManagement.with_connection(params[:site]) do |db|
+        if upload = Upload.find_by(sha1: params[:sha]) || Upload.find_by(id: params[:id], url: request.env["PATH_INFO"])
+          if upload.original_filename && upload.original_filename.start_with?('user-archive-')
+            if current_user.nil? || upload.user_id.nil? || (current_user.id != upload.user_id)
+              return render_404
+            end
+          end
+        end
+      end
+      super
+    end
+  end
+
+  class ::UploadsController
+    prepend LegalUploadsControllerExtension
+  end
+
+
 end
