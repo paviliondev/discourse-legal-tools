@@ -140,7 +140,6 @@ module ExtendedDownloadExportExtension
     'posts_read_count',
     'likes_given',
     'likes_received',
-    'topic_reply_count',
     'new_since',
     'read_faq',
     'first_post_created_at',
