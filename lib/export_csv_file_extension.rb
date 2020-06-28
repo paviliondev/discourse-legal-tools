@@ -256,12 +256,12 @@ module ExtendedDownloadExportExtension
     end
   end
 
-  def get_header
-    if (@entity === 'user_archive' && SiteSetting.legal_extended_user_download) ||
-       (@entity === 'admin_user_archive' && SiteSetting.legal_extended_user_download_admin)
+  def get_header(entity)
+    if (entity === 'user_archive' && SiteSetting.legal_extended_user_download) ||
+       (entity === 'admin_user_archive' && SiteSetting.legal_extended_user_download_admin)
       extended_header
     else
-      super
+      super(entity)
     end
   end
 
