@@ -261,7 +261,7 @@ module ExtendedDownloadExportExtension
        (entity === 'admin_user_archive' && SiteSetting.legal_extended_user_download_admin)
       extended_header
     else
-      super(entity)
+      super
     end
   end
 
