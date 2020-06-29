@@ -1,6 +1,6 @@
 # name: discourse-legal-tools
 # about: Tools to help with legal compliance when using Discourse
-# version: 2.5.0
+# version: 0.1
 # author: Angus McLeod
 
 load File.expand_path('../models/legal_extended_user_download_admin_site_setting.rb', __FILE__)
