@@ -84,29 +84,12 @@ module ExtendedDownloadExportExtension
     'email'
   ]
 
-  GOOGLE = [
-    'google_user_id',
-    'first_name',
-    'last_name',
-    'email',
-    'gender',
-    'name',
-    'link',
-    'profile_link',
-    'picture'
-  ]
-
   ASSOCIATED = [
     'provider_name',
     'provider_uid',
     'last_used',
     'info',
     'extra'
-  ]
-
-  INSTAGRAM = [
-    'screen_name',
-    'instagram_user_id'
   ]
 
   GITHUB = [
@@ -355,10 +338,8 @@ module ExtendedDownloadExportExtension
   def user_external_accounts_fields
     @user_external_accounts_fields ||= begin
       fields = []
-      fields.concat GOOGLE.map { |f| "google_user_infos.#{f}" } if GoogleUserInfo.exists?(user_id: archive_user.id)
       fields.concat ASSOCIATED.map { |f| "user_associated_accounts.#{f}" } if UserAssociatedAccount.exists?(user_id: archive_user.id)
       fields.concat GITHUB.map { |f| "github_user_infos.#{f}" } if GithubUserInfo.exists?(user_id: archive_user.id)
-      fields.concat INSTAGRAM.map { |f| "instagram_user_infos.#{f}" } if InstagramUserInfo.exists?(user_id: archive_user.id)
       fields.concat OAUTH.map { |f| "oauth2_user_infos.#{f}" } if Oauth2UserInfo.exists?(user_id: archive_user.id)
       fields.concat OPEN_ID.map { |f| "user_open_ids.#{f}" } if UserOpenId.exists?(user_id: archive_user.id)
       fields.concat SSO.map { |f| "single_sign_on_records.#{f}" } if SingleSignOnRecord.exists?(user_id: archive_user.id)
@@ -396,10 +377,8 @@ module ExtendedDownloadExportExtension
   def user_external_accounts
     attributes = User.where(id: archive_user.id)
       .joins("
-        LEFT JOIN google_user_infos ON google_user_infos.user_id = users.id
         LEFT JOIN user_associated_accounts ON user_associated_accounts.user_id = users.id
         LEFT JOIN github_user_infos ON github_user_infos.user_id = users.id
-        LEFT JOIN instagram_user_infos ON instagram_user_infos.user_id = users.id
         LEFT JOIN oauth2_user_infos ON oauth2_user_infos.user_id = users.id
         LEFT JOIN user_open_ids ON user_open_ids.user_id = users.id
         LEFT JOIN single_sign_on_records ON single_sign_on_records.user_id = users.id
