@@ -1,0 +1,6 @@
+it:
+  js:
+    user:
+      download_archive:
+        confirm_all: "Sei sicuro di voler scaricare tutte le tue informazioni ?"
+        confirm_all_admin: "Sei sicuro di voler scaricare tutte le informazioni di {{username}}?"
