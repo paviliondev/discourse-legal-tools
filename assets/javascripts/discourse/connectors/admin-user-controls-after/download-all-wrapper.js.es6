@@ -3,7 +3,7 @@ import { exportEntity } from 'discourse/lib/export-csv';
 export default {
   setupComponent(attrs, component) {
     const setting = Discourse.SiteSettings.legal_extended_user_download_admin;
-    const user = Discourse.User.current();
+    const user = component.currentUser;
     const allowed = (function(setting) {
       switch(setting) {
         case 'disabled':
