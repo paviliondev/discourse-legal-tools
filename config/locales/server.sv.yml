@@ -1,0 +1,15 @@
+sv:
+  csv_export:
+    extended:
+      title: "All information of %{username} stored by %{site_name}."
+      note: >
+        Please note that some information associated with the user identifier of %{username} has been excluded from this download due to countervailing privacy and legal interests. For more information, please contact %{site_contact}.
+    error:
+      admin_user_archive_export: "legal extended user download admin is not enabled"
+  site_settings:
+    legal_extended_user_download: "Include all of the user's information in the download feature in the user profile. Refresh after changing this. <a href='https://meta.discourse.org/t/legal-tools-plugin/87966'>See what's included</a>."
+    legal_extended_user_download_admin: "Allow download all of a user's information in user admin. <a href='https://meta.discourse.org/t/legal-tools-plugin/87966'>See what's included</a>."
+    legal_extended_user_download_admin_choices:
+      disabled: 'Disabled'
+      admins_only: 'Admins Only'
+      admins_and_staff: 'Admins and Staff'

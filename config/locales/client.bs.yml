@@ -1,0 +1,6 @@
+bs:
+  js:
+    user:
+      download_archive:
+        confirm_all: "Are you sure you want to download all of your information?"
+        confirm_all_admin: "Are you sure you want to download all of the information of {{username}}?"
