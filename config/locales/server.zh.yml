@@ -1,4 +1,4 @@
-zh-CN:
+zh-TW:
   csv_export:
     extended:
       title: "All information of %{username} stored by %{site_name}."
