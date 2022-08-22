@@ -2,7 +2,7 @@
 # about: Tools to help with legal compliance when using Discourse
 # version: 0.2.1
 # required_version: 2.5.0
-# author: Angus McLeod
+# authors: Angus McLeod
 # contact_emails: development@pavilion.tech
 # url: https://github.com/paviliondev/discourse-legal-tools
 
