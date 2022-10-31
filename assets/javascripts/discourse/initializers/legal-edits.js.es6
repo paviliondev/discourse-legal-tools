@@ -6,6 +6,7 @@ export default {
   initialize() {
     withPluginApi('0.8.12', api => {
       api.modifyClass('controller:user-activity', {
+        pluginId: 'discourse-legal-tools',
         actions: {
           exportUserArchive() {
             const extendedUserDownload = this.siteSettings.legal_extended_user_download;
