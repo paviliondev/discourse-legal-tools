@@ -2,5 +2,5 @@ it:
   js:
     user:
       download_archive:
-        confirm_all: "Are you sure you want to download all of your information?"
-        confirm_all_admin: "Are you sure you want to download all of the information of {{username}}?"
+        confirm_all: "Sei sicuro di voler scaricare tutte le tue informazioni ?"
+        confirm_all_admin: "Sei sicuro di voler scaricare tutte le informazioni di {{username}}?"
