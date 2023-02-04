@@ -1,8 +1,9 @@
 # name: discourse-legal-tools
 # about: Tools to help with legal compliance when using Discourse
-# version: 0.2
+# version: 0.2.1
 # required_version: 2.5.0
-# author: Angus McLeod
+# authors: Angus McLeod
+# contact_emails: development@pavilion.tech
 # url: https://github.com/paviliondev/discourse-legal-tools
 
 load File.expand_path('../models/legal_extended_user_download_admin_site_setting.rb', __FILE__)
@@ -10,7 +11,6 @@ load File.expand_path('../models/legal_extended_user_download_admin_site_setting
 after_initialize do
   load File.expand_path('../lib/export_csv_file_extension.rb', __FILE__)
 
-  require_dependency 'jobs/regular/export_csv_file'
   class Jobs::ExportCsvFile
     prepend ExtendedDownloadExportExtension
   end

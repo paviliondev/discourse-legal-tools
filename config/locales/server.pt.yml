@@ -1,0 +1,15 @@
+pt:
+  csv_export:
+    extended:
+      title: "Todas as informações de %{username} armazenadas por %{site_name}."
+      note: >
+        Por favor, note que algumas informações associadas ao identificador de usuário de %{username} foram excluídas deste download devido a compensação da privacidade e interesses legais. Para mais informações, entre em contato com %{site_contact}.
+    error:
+      admin_user_archive_export: "o administrador de download de usuário estendido legal não está habilitado"
+  site_settings:
+    legal_extended_user_download: "Inclua todas as informações do usuário no download do recurso de perfil de usuário. Atualize após alterar isto. <a href='https://meta.discourse.org/t/legal-tools-plugin/87966'>Veja o que está incluído</a>."
+    legal_extended_user_download_admin: "Permitir download de todas as informações do usuário no administrador do usuário. <a href='https://meta.discourse.org/t/legal-tools-plugin/87966'>Veja o que está incluso</a>."
+    legal_extended_user_download_admin_choices:
+      disabled: 'Desabilitado'
+      admins_only: 'Apenas Administradores'
+      admins_and_staff: 'Administradores e Staffs'

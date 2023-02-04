@@ -1,6 +1,25 @@
 require_dependency 'topic_view_item'
 
 module ExtendedDownloadControllerExtension
+  
+  def export_entity
+    guardian.ensure_can_export_entity!(export_params[:entity])
+
+    if SiteSetting.legal_extended_user_download && (
+        export_params[:entity] == 'admin_user_archive' ||
+        export_params[:entity] == 'user_archive'
+      )
+      
+      Jobs.enqueue(:export_csv_file,
+        entity: export_params[:entity],
+        user_id: current_user.id,
+        args: export_params[:args]
+      )
+    else
+      super
+    end
+  end
+  
   private def export_params
     if admin_user_archive
       @_export_params ||= begin
@@ -90,11 +109,6 @@ module ExtendedDownloadExportExtension
     'last_used',
     'info',
     'extra'
-  ]
-
-  GITHUB = [
-    'screen_name',
-    'github_user_id'
   ]
 
   OAUTH = [
@@ -264,8 +278,8 @@ module ExtendedDownloadExportExtension
     block.call extended_note
 
     separator('Posts').each { |l| block.call l }
-    block.call Jobs::ExportCsvFile::HEADER_ATTRS_FOR['user_archive']
-    user_posts.each { |posts| block.call get_user_archive_fields(posts) }
+    block.call Jobs::ExportUserArchive::HEADER_ATTRS_FOR['user_archive']
+    user_posts.each { |posts| block.call user_posts_archive(posts) }
 
     separator('Account').each { |l| block.call l }
     block.call ACCOUNT + PROFILE + EMAIL
@@ -313,6 +327,38 @@ module ExtendedDownloadExportExtension
     block.call HISTORY
     user_history.each { |l| block.call l }
   end
+  
+  def piped_category_name(category_id)
+    return "-" unless category_id
+    category = Category.find_by(id: category_id)
+    return "#{category_id}" unless category
+    categories = [category.name]
+    while category.parent_category_id && category = category.parent_category
+      categories << category.name
+    end
+    categories.reverse.join("|")
+  end
+  
+  def user_posts_archive(user_post)
+    user_post_array = []
+    topic_data = user_post.topic
+    user_post_json = user_post.as_json
+    topic_data = Topic.with_deleted.find_by(id: user_post_json['topic_id']) if topic_data.nil?
+    return user_post_array if topic_data.nil?
+
+    categories = piped_category_name(topic_data.category_id)
+    is_pm = topic_data.archetype == "private_message" ? I18n.t("csv_export.boolean_yes") : I18n.t("csv_export.boolean_no")
+    url = "#{Discourse.base_url}/t/#{topic_data.slug}/#{topic_data.id}/#{user_post_json['post_number']}"
+
+    topic_hash = { "post" => user_post_json['raw'], "topic_title" => topic_data.title, "categories" => categories, "is_pm" => is_pm, "url" => url }
+    user_post_json.merge!(topic_hash)
+
+    Jobs::ExportUserArchive::HEADER_ATTRS_FOR['user_archive'].each do |attr|
+      user_post_array.push(user_post_json[attr])
+    end
+
+    user_post_array
+  end
 
   def user_posts
     Post.includes(topic: :category)
@@ -339,7 +385,6 @@ module ExtendedDownloadExportExtension
     @user_external_accounts_fields ||= begin
       fields = []
       fields.concat ASSOCIATED.map { |f| "user_associated_accounts.#{f}" } if UserAssociatedAccount.exists?(user_id: archive_user.id)
-      fields.concat GITHUB.map { |f| "github_user_infos.#{f}" } if GithubUserInfo.exists?(user_id: archive_user.id)
       fields.concat OAUTH.map { |f| "oauth2_user_infos.#{f}" } if Oauth2UserInfo.exists?(user_id: archive_user.id)
       fields.concat OPEN_ID.map { |f| "user_open_ids.#{f}" } if UserOpenId.exists?(user_id: archive_user.id)
       fields.concat SSO.map { |f| "single_sign_on_records.#{f}" } if SingleSignOnRecord.exists?(user_id: archive_user.id)
@@ -378,7 +423,6 @@ module ExtendedDownloadExportExtension
     attributes = User.where(id: archive_user.id)
       .joins("
         LEFT JOIN user_associated_accounts ON user_associated_accounts.user_id = users.id
-        LEFT JOIN github_user_infos ON github_user_infos.user_id = users.id
         LEFT JOIN oauth2_user_infos ON oauth2_user_infos.user_id = users.id
         LEFT JOIN user_open_ids ON user_open_ids.user_id = users.id
         LEFT JOIN single_sign_on_records ON single_sign_on_records.user_id = users.id
