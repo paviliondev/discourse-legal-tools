@@ -36,7 +36,6 @@ export default class UserExportComponent extends Component {
 
   @action
   exportAdminUserArchive(user) {
-    console.log(user);
     this.dialog.confirm({
       message: I18n.t("user.download_archive.confirm_all_admin", { username: user.username }),
       didConfirm: () => {
