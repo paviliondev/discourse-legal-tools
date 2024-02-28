@@ -1,8 +1,8 @@
 # name: discourse-legal-tools
 # about: Tools to help with legal compliance when using Discourse
-# version: 0.2.1
-# required_version: 2.5.0
-# authors: Angus McLeod
+# version: 0.2.2
+# required_version: 3.1.0
+# authors: Pavilion
 # contact_emails: development@pavilion.tech
 # url: https://github.com/paviliondev/discourse-legal-tools
 
